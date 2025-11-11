@@ -33,7 +33,11 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     let mut fetcher = PackageGraphQLFetcher::new(initial_checkpoint, None);
     let res = fetcher.fetch_all()?;
-    let new_max_checkpoint: u64 = res.iter().max_by_key(|pkg| pkg.checkpoint).unwrap().checkpoint;
+    let new_max_checkpoint: u64 = if let Some(max) = res.iter().max_by_key(|pkg| pkg.checkpoint) {
+        max.checkpoint
+    } else {
+        initial_checkpoint
+    };
     println!("{} new packages found. New max checkpoint seen: {}", res.len(), new_max_checkpoint);
     let save_args = SaveArgs {
         bcs: true,
