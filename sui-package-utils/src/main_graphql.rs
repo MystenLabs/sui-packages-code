@@ -1,6 +1,7 @@
 
 use std::error::Error;
 use std::path::PathBuf;
+use std::fs;
 
 use clap::Parser;
 use sui_package_utils::graphql::PackageGraphQLFetcher;
@@ -15,6 +16,8 @@ struct Args {
     packages_dir: PathBuf,
     #[arg(long)]
     initial_checkpoint: Option<u64>,
+    #[arg(long)]
+    max_checkpoint_seen_file: Option<PathBuf>,
     #[arg(long, default_value = "false")]
     force: bool,
 }
@@ -30,6 +33,8 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     let mut fetcher = PackageGraphQLFetcher::new(initial_checkpoint, None);
     let res = fetcher.fetch_all()?;
+    let new_max_checkpoint: u64 = res.iter().max_by_key(|pkg| pkg.checkpoint).unwrap().checkpoint;
+    println!("{} new packages found. New max checkpoint seen: {}", res.len(), new_max_checkpoint);
     let save_args = SaveArgs {
         bcs: true,
         bytecode: true,
@@ -42,6 +47,11 @@ fn main() -> Result<(), Box<dyn Error>> {
     };
     for pkg in res {
         save_package(&save_args, &pkg)?;
+    }
+
+    if let Some(max_checkpoint_seen_file) = cli_args.max_checkpoint_seen_file {
+        let checkpoint_json = format!("{{\n  \"max_checkpoint_seen\": \"{}\"\n}}", new_max_checkpoint);
+        fs::write(max_checkpoint_seen_file, checkpoint_json)?;
     }
     Ok(())
 }
