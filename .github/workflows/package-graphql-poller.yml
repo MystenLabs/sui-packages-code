@@ -29,7 +29,7 @@ jobs:
 
       - name: Download dependencies
         run: |
-          set -e
+          set -ex
           ROOT=$(pwd)
           mkdir -p "${ROOT}/inputs/$(dirname $PACKAGE_GRAPHQL_POLLER_MOVE_DECOMPILER_BIN)"
           # download decompiler first as it's longer and it doesn't matter if it's a little out of date
@@ -41,6 +41,7 @@ jobs:
       - name: Run sui-packages-graphql-poller
         id: sui_packages_graphql_poller
         run: |
+          set -ex
           echo "Running package graphql poller on mainnet" > /dev/stderr
           OLDDIR="$(pwd)"
           SUI_PACKAGES_ROOT="$(pwd)/sui-packages"
@@ -74,6 +75,7 @@ jobs:
         if: ${{ steps.sui_packages_graphql_poller.outputs.sui_packages_checkout_needed == 'true' }}
         continue-on-error: true
         run: |
+          set -ex
           ROOT="$(pwd)"
           if cmp -s "${ROOT}/outputs/${ACTION_HELPER_JSON}" "${ROOT}/sui-packages/${ACTION_HELPER_JSON}"; then
             exit 0
