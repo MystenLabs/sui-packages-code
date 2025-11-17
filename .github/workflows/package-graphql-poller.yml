@@ -90,7 +90,14 @@ jobs:
             git sparse-checkout add "packages/mainnet/$D"
           done
           git pull origin main --depth=5
-          cp "${ROOT}/outputs/${ACTION_HELPER_JSON}" "${ACTION_HELPER_JSON}"
+          
+          echo "Directories after pulling:"
+          echo "$(pwd):"
+          ls -1ah "$(pwd)"
+          echo "$(pwd/${PACKAGE_GRAPHQL_POLLER_PACKAGES_DIR_MAINNET})/"
+          ls -1ah "$(pwd/${PACKAGE_GRAPHQL_POLLER_PACKAGES_DIR_MAINNET})/"
+          
+          cp "${ROOT}/outputs/${ACTION_HELPER_JSON}" "sui${ACTION_HELPER_JSON}"
           cp -a "${ROOT}/outputs/${NEW_SUI_PACKAGES_DIR}"/* "${PACKAGE_GRAPHQL_POLLER_PACKAGES_DIR_MAINNET}/"
           git add "$ACTION_HELPER_JSON"
           git add "$PACKAGE_GRAPHQL_POLLER_PACKAGES_DIR_MAINNET"
