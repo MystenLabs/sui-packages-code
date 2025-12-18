@@ -4,11 +4,10 @@ use crate::metadata::PackageMetadata;
 use base64::prelude::*;
 use regex::Regex;
 use serde::{Deserialize, Serialize};
+use std::collections::BTreeMap;
 use std::fs;
 use std::io::Error as IOError;
 use std::path::PathBuf;
-use std::collections::BTreeMap;
-
 
 use move_binary_format::file_format::CompiledModule;
 pub struct PackagesDir {
@@ -68,13 +67,33 @@ impl PackagesDir {
         Ok(package_directories)
     }
 
-    pub fn load_package_modules(self: &PackagesDir, id: &str) -> Result<BTreeMap<String, CompiledModule>, PackageIoError> {
+    pub fn load_package_modules(
+        self: &PackagesDir,
+        id: &str,
+    ) -> Result<BTreeMap<String, CompiledModule>, PackageIoError> {
         let package_dir = self.get_package_dir(id);
-        let bcs_json = fs::read_to_string(format!("{}/bcs.json", package_dir)).map_err(|e| PackageIoError { message: e.to_string() })?;
-        let bcs_json: BcsJsonSchema = serde_json::from_str(&bcs_json).map_err(|e| PackageIoError { message: e.to_string() })?;
+        let bcs_json = fs::read_to_string(format!("{}/bcs.json", package_dir)).map_err(|e| {
+            PackageIoError {
+                message: e.to_string(),
+            }
+        })?;
+        let bcs_json: BcsJsonSchema =
+            serde_json::from_str(&bcs_json).map_err(|e| PackageIoError {
+                message: e.to_string(),
+            })?;
         let mut modules = BTreeMap::new();
         for (module_name, module_b64) in bcs_json.get_module_map() {
-            let module = CompiledModule::deserialize_with_defaults(BASE64_STANDARD.decode(module_b64).map_err(|e| PackageIoError { message: e.to_string() })?.as_slice()).map_err(|e| PackageIoError { message: e.to_string() })?;
+            let module = CompiledModule::deserialize_with_defaults(
+                BASE64_STANDARD
+                    .decode(module_b64)
+                    .map_err(|e| PackageIoError {
+                        message: e.to_string(),
+                    })?
+                    .as_slice(),
+            )
+            .map_err(|e| PackageIoError {
+                message: e.to_string(),
+            })?;
             modules.insert(module_name.clone(), module);
         }
         Ok(modules)

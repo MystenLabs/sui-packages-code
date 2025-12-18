@@ -122,29 +122,28 @@ impl TryInto<MovePackageWithMetadata> for PackageGraphQLResponseNode {
     type Error = GraphQLFetcherError;
     fn try_into(self) -> Result<MovePackageWithMetadata, Self::Error> {
         let address = self.address.clone();
-        let (sender, transaction_digest, checkpoint) =
-            if let Some(previous_transaction) = self.previous_transaction {
-                (
-                    previous_transaction.sender.map(|s| s.address.clone()),
-                    previous_transaction.digest.clone(),
-                    previous_transaction
-                        .effects
-                        .checkpoint
-                        .sequence_number,
-                )
-            } else {
-                let transaction_digest = get_package_creation_transaction(&address)
-                    .map_err(|_| GraphQLFetcherError::PreviousTransactionNotAvailable(address.clone()))?;
-                let transaction_metadata: TransactionMetadata =
-                    get_transaction_metadata(&transaction_digest)
-                        .map_err(|_| GraphQLFetcherError::PreviousTransactionNotAvailable(address.clone()))?;
-                (
-                    Some(transaction_metadata.sender),
-                    transaction_digest,
-                    transaction_metadata.checkpoint,
-                )
-            };
-
+        let (sender, transaction_digest, checkpoint) = if let Some(previous_transaction) =
+            self.previous_transaction
+        {
+            (
+                previous_transaction.sender.map(|s| s.address.clone()),
+                previous_transaction.digest.clone(),
+                previous_transaction.effects.checkpoint.sequence_number,
+            )
+        } else {
+            let transaction_digest = get_package_creation_transaction(&address).map_err(|_| {
+                GraphQLFetcherError::PreviousTransactionNotAvailable(address.clone())
+            })?;
+            let transaction_metadata: TransactionMetadata =
+                get_transaction_metadata(&transaction_digest).map_err(|_| {
+                    GraphQLFetcherError::PreviousTransactionNotAvailable(address.clone())
+                })?;
+            (
+                Some(transaction_metadata.sender),
+                transaction_digest,
+                transaction_metadata.checkpoint,
+            )
+        };
 
         let package_bcs = BASE64_STANDARD
             .decode(&self.package_bcs)

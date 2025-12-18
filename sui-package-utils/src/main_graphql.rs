@@ -1,12 +1,11 @@
-
 use std::error::Error;
-use std::path::PathBuf;
 use std::fs;
+use std::path::PathBuf;
 
 use clap::Parser;
 use sui_package_utils::graphql::PackageGraphQLFetcher;
 use sui_package_utils::package_id_io::PackagesDir;
-use sui_package_utils::package_saver::{SaveArgs, save_package};
+use sui_package_utils::package_saver::{save_package, SaveArgs};
 
 #[derive(Parser)]
 struct Args {
@@ -29,7 +28,10 @@ fn main() -> Result<(), Box<dyn Error>> {
     } else {
         packages_dir.get_latest_checkpoint()?
     };
-    println!("Fetching packages from graphql starting from checkpoint {}", initial_checkpoint);
+    println!(
+        "Fetching packages from graphql starting from checkpoint {}",
+        initial_checkpoint
+    );
 
     let mut fetcher = PackageGraphQLFetcher::new(initial_checkpoint, None);
     let res = fetcher.fetch_all()?;
@@ -38,7 +40,11 @@ fn main() -> Result<(), Box<dyn Error>> {
     } else {
         initial_checkpoint
     };
-    println!("{} new packages found. New max checkpoint seen: {}", res.len(), new_max_checkpoint);
+    println!(
+        "{} new packages found. New max checkpoint seen: {}",
+        res.len(),
+        new_max_checkpoint
+    );
     let save_args = SaveArgs {
         bcs: true,
         bytecode: true,
@@ -54,7 +60,10 @@ fn main() -> Result<(), Box<dyn Error>> {
     }
 
     if let Some(max_checkpoint_seen_file) = cli_args.max_checkpoint_seen_file {
-        let checkpoint_json = format!("{{\n  \"max_checkpoint_seen\": \"{}\"\n}}", new_max_checkpoint);
+        let checkpoint_json = format!(
+            "{{\n  \"max_checkpoint_seen\": \"{}\"\n}}",
+            new_max_checkpoint
+        );
         fs::write(max_checkpoint_seen_file, checkpoint_json)?;
     }
     Ok(())

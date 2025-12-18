@@ -100,7 +100,8 @@ fn save_code_files(
     let pkg = &pkg_with_metadata.package;
     for (module_name, module_bytes) in pkg.serialized_module_map() {
         let bytecode_path = format!("{}/bytecode_modules/{}.mv", package_dir, module_name);
-        if save_args.bytecode && (save_args.force || !std::path::Path::new(&bytecode_path).exists()) {
+        if save_args.bytecode && (save_args.force || !std::path::Path::new(&bytecode_path).exists())
+        {
             println!("Saving {}", bytecode_path);
             fs::write(&bytecode_path, module_bytes).map_err(|e| {
                 PackageSaverError::SaveError(
@@ -117,7 +118,8 @@ fn save_code_files(
                 let output = std::process::Command::new(&save_args.move_decompiler_path)
                     .arg("--bytecode")
                     .arg(bytecode_path)
-                    .output().map_err(|e| {
+                    .output()
+                    .map_err(|e| {
                         PackageSaverError::SaveError(
                             format!("Error running move-decompiler: {}", e),
                             pkg_with_metadata.package.id().to_canonical_string(true),
